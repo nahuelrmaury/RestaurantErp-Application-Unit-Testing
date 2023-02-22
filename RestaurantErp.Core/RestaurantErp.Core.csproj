@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\Bill\" />
+    <Folder Include="Models\Discount\" />
+  </ItemGroup>
+
 </Project>
