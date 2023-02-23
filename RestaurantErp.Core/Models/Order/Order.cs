@@ -8,14 +8,26 @@ namespace RestaurantErp.Core
 
         //public bool IsPayed { get; set; }
     
-        public List<OrderItem> Items { get; set; }
+        public ConcurrentBag<OrderItem> Items { get; set; } = new ConcurrentBag<OrderItem>();
     }
 
     public class OrderItem
     {
+        public Guid ItemId { get; set; }
+
         public DishEnum Dish { get; set; }
 
+        public DateTime OrderingTime { get; set; }
+
         public int PersonId { get; set; }
+
+        // Because price should be fixed in moment of ordering
+        public decimal Price { get; set; }
+
+        // Assumption:
+        // we should keep information in our system about all cancelled items
+        // for managing consumption of ingredients
+        public bool IsCancelled { get; set; }
     }
 
     public class Bill
@@ -31,22 +43,6 @@ namespace RestaurantErp.Core
         public decimal Discount { get; set; }
 
         public decimal AmountDiscounted { get; set; }
-
-        // TODO:
-        // move to separated class 
-        public void ApplyDiscount(BillDiscountInfo billDiscountInfo)
-        {
-            Discount += billDiscountInfo.Discount;
-            AmountDiscounted -= billDiscountInfo.Discount;
-
-            foreach (var itemInfo in billDiscountInfo.Items)
-            {
-                var targetItem = Items.Single(i => i.ItemId == itemInfo.ItemId);
-
-                targetItem.Discount += itemInfo.Discount;
-                targetItem.AmountDiscounted -= itemInfo.Discount;
-            }
-        }
     }
 
     public class BillItem
