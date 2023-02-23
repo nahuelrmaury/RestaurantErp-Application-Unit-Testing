@@ -11,6 +11,6 @@ namespace RestaurantErp.Core.Contracts
 
         void CancelItem(OrderItemRequest request);
 
-        Bill Checkout(Guid orderId);
+        BillExternal Checkout(Guid orderId);
     }
 }

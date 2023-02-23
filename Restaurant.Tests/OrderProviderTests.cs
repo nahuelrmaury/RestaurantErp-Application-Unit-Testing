@@ -1,6 +1,9 @@
+using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using RestaurantErp.Core.Contracts;
+using RestaurantErp.Core.Helpers;
+using RestaurantErp.Core.Models.Bill;
 using RestaurantErp.Core.Models.Discount;
 using RestaurantErp.Core.Models.Order;
 using RestaurantErp.Core.Models.Product;
@@ -12,7 +15,7 @@ namespace Restaurant.Tests
     public class OrderProviderTests
     {
         [Test]
-        public void SeveralItems()
+        public void TwoProductsInOrder_Ckeckout_AmountIsCorrect()
         {
             // Precondition
 
@@ -28,25 +31,27 @@ namespace Restaurant.Tests
                 MinimalProductPrice = 0
             });
 
-            ITimeHelper timeHelper = new TimeHelper();
-
             IOrderProvider orderProvider = new OrderProvider(
                 (IPriceStorage)productProvider,
                 new[] { (IDiscountProvider)discountManager },
                 calculator,
-                timeHelper);
+                new TimeHelper(),
+                new BillHelper(productProvider));
 
-            var starterId = productProvider.AddProduct(new AddProductRequest
+            var requestProduct1 = new AddProductRequest
             {
                 Name = "Starter",
                 Price = 4
-            });
+            };
 
-            var mainId = productProvider.AddProduct(new AddProductRequest
+            var requestProduct2 = new AddProductRequest
             {
                 Name = "Main",
                 Price = 7
-            });
+            };
+
+            var productId1 = productProvider.AddProduct(requestProduct1);
+            var productId2 = productProvider.AddProduct(requestProduct2);
 
             // Action
 
@@ -56,27 +61,56 @@ namespace Restaurant.Tests
             {
                 OrderId = orderId,
                 Count = 1,
-                ProductId = starterId
+                ProductId = productId1
             });
 
             orderProvider.AddItem(new OrderItemRequest
             {
                 OrderId = orderId,
                 Count = 1,
-                ProductId = mainId
+                ProductId = productId2
             });
 
-            var bill = orderProvider.Checkout(orderId);
+            var actual = orderProvider.Checkout(orderId);
 
             // Assert
 
-            Assert.AreEqual(11, bill.Amount);
+            var expected = new BillExternal
+            {
+                Amount = 11,
+                AmountDiscounted = 11,
+                Discount = 0,
+                OrderId = orderId,
+                Items = new []
+                {
+                    new BillItemExternal
+                    {
+                        Amount = 4,
+                        Discount = 0,
+                        AmountDiscounted = 4,
+                        PersonId = 0,
+                        ProductName = requestProduct1.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 7,
+                        Discount = 0,
+                        AmountDiscounted = 7,
+                        ProductName = requestProduct2.Name
+                    }
+                }
+            };
+
+            actual.Should().BeEquivalentTo(expected);
         }
 
         [TestCase(2.5, "2023-1-20T18:59:59+00:00", 0.3, 0, 0, 19, 0, 2.5, 0.75, 1.75)]
         [TestCase(2.5, "2023-1-20T19:00:00+00:00", 0.3, 0, 0, 19, 0, 2.5, 0.75, 1.75)]
         [TestCase(2.5, "2023-1-20T19:00:01+00:00", 0.3, 0, 0, 19, 0, 2.5, 0, 2.5)]
-        public void CreateOneProduct_AddDiscountByTime_AmountIsCorrect(decimal productPrice, 
+        [TestCase(25, "2023-1-20T18:59:59+00:00", 0.1, 0, 0, 19, 0, 25, 2.5, 22.5)]
+        [TestCase(25, "2023-1-20T19:00:00+00:00", 0.1, 0, 0, 19, 0, 25, 2.5, 22.5)]
+        [TestCase(25, "2023-1-20T19:00:01+00:00", 0.1, 0, 0, 19, 0, 25, 0, 25)]
+        public void CreateOneProductAndDiscountByTime_Ckeckout_AmountIsCorrect(decimal productPrice, 
             DateTime currentTime, 
             decimal discountValue, 
             int discountStartTimeHour, 
@@ -108,7 +142,8 @@ namespace Restaurant.Tests
                 (IPriceStorage)productProvider,
                 new[] { (IDiscountProvider)discountManager },
                 calculator,
-                timeHelper.Object);
+                timeHelper.Object,
+                new BillHelper(productProvider));
 
             var productId = productProvider.AddProduct(new AddProductRequest
             {
@@ -170,7 +205,8 @@ namespace Restaurant.Tests
                 (IPriceStorage)productProvider, 
                 new[] {(IDiscountProvider)discountManager }, 
                 calculator,
-                timeHelper);
+                timeHelper,
+                new BillHelper(productProvider));
 
             var starterId = productProvider.AddProduct(new AddProductRequest
             {

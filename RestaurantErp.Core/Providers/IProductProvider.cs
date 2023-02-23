@@ -4,6 +4,8 @@ namespace RestaurantErp.Core.Providers
 {
     public interface IProductProvider
     {
-        public Guid AddProduct(AddProductRequest productInfo);
+        Guid AddProduct(AddProductRequest productInfo);
+
+        ProductInfo GetProductInfo(Guid id);
     }
 }

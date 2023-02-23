@@ -1,4 +1,5 @@
 ﻿using RestaurantErp.Core.Contracts;
+using RestaurantErp.Core.Helpers;
 using RestaurantErp.Core.Models.Bill;
 using RestaurantErp.Core.Models.Order;
 using System.Collections.Concurrent;
@@ -13,16 +14,19 @@ namespace RestaurantErp.Core.Providers
         private readonly IEnumerable<IDiscountProvider> _discountProviders;
         private readonly IDiscountCalculator _discountCalculator;
         private readonly ITimeHelper _timeHelper;
+        private readonly BillHelper _billHelper;
 
         public OrderProvider(IPriceStorage priceStorage,
             IEnumerable<IDiscountProvider> discountProviders,
             IDiscountCalculator discountCalculator,
-            ITimeHelper timeHelper)
+            ITimeHelper timeHelper,
+            BillHelper billHelper)
         {
             _priceStorage = priceStorage;
             _discountProviders = discountProviders;
             _discountCalculator = discountCalculator;
             _timeHelper = timeHelper;
+            _billHelper = billHelper;
         }
 
         public Guid CreateOrder()
@@ -84,7 +88,7 @@ namespace RestaurantErp.Core.Providers
         // TODO:
         // add calback logic.
         // after changing order (AddItem / CancelItem methods) - previous bill must be compromised
-        public Bill Checkout(Guid orderId)
+        public BillExternal Checkout(Guid orderId)
         {
             var targetOrder = _orderStorage.Single(i => i.Id == orderId);
 
@@ -112,7 +116,9 @@ namespace RestaurantErp.Core.Providers
 
             _discountCalculator.ApplyDiscount(bill, discounts);
 
-            return bill;
+            var publicBill = _billHelper.GetExternalBill(bill);
+
+            return publicBill;
         }
     }
 }
