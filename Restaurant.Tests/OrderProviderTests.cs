@@ -36,7 +36,8 @@ namespace Restaurant.Tests
                 new[] { (IDiscountProvider)discountManager },
                 calculator,
                 new TimeHelper(),
-                new BillHelper(productProvider));
+                new BillHelper(productProvider),
+                new ServiceChargeProvider(new ServiceChargeProviderSettings { ServiceRate = 0.1m}));
 
             var requestProduct1 = new AddProductRequest
             {
@@ -81,6 +82,8 @@ namespace Restaurant.Tests
                 AmountDiscounted = 11,
                 Discount = 0,
                 OrderId = orderId,
+                Service = 1.1m,
+                Total = 12.1m,
                 Items = new[]
                 {
                     new BillItemExternal
@@ -143,7 +146,8 @@ namespace Restaurant.Tests
                 new[] { (IDiscountProvider)discountManager },
                 calculator,
                 timeHelper.Object,
-                new BillHelper(productProvider));
+                new BillHelper(productProvider),
+                new ServiceChargeProvider(new ServiceChargeProviderSettings { ServiceRate = 0.1m }));
 
             var productId = productProvider.AddProduct(new AddProductRequest
             {
@@ -183,92 +187,6 @@ namespace Restaurant.Tests
         }
 
         [Test]
-        public void Test2()
-        {
-            // Precondition
-
-            var productProvider = new ProductProvider();
-
-            IDiscountByTimeProvider discountManager = new DiscountByTimeProvider(new DiscountByTimeProviderSettings
-            {
-                EndDiscountDelay = TimeSpan.Zero
-            });
-
-            IDiscountCalculator calculator = new DiscountCalculator(new DiscountCalculatorSettings
-            {
-                MinimalProductPrice = 0
-            });
-
-            ITimeHelper timeHelper = new TimeHelper();
-
-            IOrderProvider orderProvider = new OrderProvider(
-                (IPriceStorage)productProvider,
-                new[] { (IDiscountProvider)discountManager },
-                calculator,
-                timeHelper,
-                new BillHelper(productProvider));
-
-            var starterId = productProvider.AddProduct(new AddProductRequest
-            {
-                Name = "Starter",
-                Price = 4
-            });
-
-            var mainId = productProvider.AddProduct(new AddProductRequest
-            {
-                Name = "Main",
-                Price = 7
-            });
-
-            var drinkId = productProvider.AddProduct(new AddProductRequest
-            {
-                Name = "Drink",
-                Price = 2.5m
-            });
-
-            discountManager.Add(new DiscountByTimeSettings
-            {
-                ProductId = drinkId,
-                StartTime = new TimeOnly(0, 0),
-                EndTime = new TimeOnly(19, 0),
-                DiscountValue = 0.3m
-            });
-
-            // Action
-
-            var orderId = orderProvider.CreateOrder();
-
-            orderProvider.AddItem(new OrderItemRequest
-            {
-                OrderId = orderId,
-                Count = 4,
-                ProductId = starterId
-            });
-
-            orderProvider.AddItem(new OrderItemRequest
-            {
-                OrderId = orderId,
-                Count = 4,
-                ProductId = mainId
-            });
-
-            orderProvider.AddItem(new OrderItemRequest
-            {
-                OrderId = orderId,
-                Count = 4,
-                ProductId = drinkId
-            });
-
-            var bill = orderProvider.Checkout(orderId);
-
-            // Assert
-
-            Assert.AreEqual(54, bill.Amount);
-            Assert.AreEqual(51, bill.AmountDiscounted);
-            Assert.AreEqual(3, bill.Discount);
-        }
-
-        [Test]
         public void SeveralItemsWithDiscountSeveralTooLate_Checkout_BillIsCorrect()
         {
             // Precondition
@@ -292,7 +210,8 @@ namespace Restaurant.Tests
                 new[] { (IDiscountProvider)discountManager },
                 calculator,
                 timeHelper.Object,
-                new BillHelper(productProvider));
+                new BillHelper(productProvider),
+                new ServiceChargeProvider(new ServiceChargeProviderSettings { ServiceRate = 0.1m }));
 
             var requestProduct1 = new AddProductRequest
             {
@@ -378,6 +297,8 @@ namespace Restaurant.Tests
                 AmountDiscounted = 40.5m,
                 Discount = 1.5m,
                 OrderId = orderId,
+                Service = 4.05m,
+                Total = 44.55m,
                 Items = new[]
                 {
                     new BillItemExternal
@@ -476,7 +397,8 @@ namespace Restaurant.Tests
                 new[] { (IDiscountProvider)discountManager },
                 calculator,
                 new TimeHelper(),
-                new BillHelper(productProvider));
+                new BillHelper(productProvider),
+                new ServiceChargeProvider(new ServiceChargeProviderSettings { ServiceRate = 0.1m }));
 
             var requestProduct1 = new AddProductRequest
             {
@@ -535,6 +457,8 @@ namespace Restaurant.Tests
                 AmountDiscounted = 54,
                 Discount = 0,
                 OrderId = orderId,
+                Service = 5.4m,
+                Total = 59.4m,
                 Items = new[]
                 {
                     new BillItemExternal
@@ -661,7 +585,8 @@ namespace Restaurant.Tests
                 new[] { (IDiscountProvider)discountManager },
                 calculator,
                 new TimeHelper(),
-                new BillHelper(productProvider));
+                new BillHelper(productProvider),
+                new ServiceChargeProvider(new ServiceChargeProviderSettings { ServiceRate = 0.1m }));
 
             var requestProduct1 = new AddProductRequest
             {
@@ -741,6 +666,8 @@ namespace Restaurant.Tests
                 AmountDiscounted = 40.5m,
                 Discount = 0,
                 OrderId = orderId,
+                Service = 4.05m,
+                Total = 44.55m,
                 Items = new[]
                 {
                     new BillItemExternal

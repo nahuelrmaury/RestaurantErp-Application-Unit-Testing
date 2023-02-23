@@ -1,10 +1,5 @@
 ﻿using RestaurantErp.Core.Models.Bill;
 using RestaurantErp.Core.Providers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RestaurantErp.Core.Helpers
 {
@@ -35,7 +30,9 @@ namespace RestaurantErp.Core.Helpers
                 Discount = internalBill.Discount,
                 AmountDiscounted = internalBill.AmountDiscounted,
                 OrderId = internalBill.OrderId,
-                Items = items
+                Items = items,
+                Service = internalBill.Service,
+                Total = internalBill.Total
             };
 
             return bill;

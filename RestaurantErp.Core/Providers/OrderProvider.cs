@@ -15,18 +15,21 @@ namespace RestaurantErp.Core.Providers
         private readonly IDiscountCalculator _discountCalculator;
         private readonly ITimeHelper _timeHelper;
         private readonly BillHelper _billHelper;
+        private readonly IServiceChargeProvider _serviceChargeProvider;
 
         public OrderProvider(IPriceStorage priceStorage,
             IEnumerable<IDiscountProvider> discountProviders,
             IDiscountCalculator discountCalculator,
             ITimeHelper timeHelper,
-            BillHelper billHelper)
+            BillHelper billHelper,
+            IServiceChargeProvider serviceChargeProvider)
         {
             _priceStorage = priceStorage;
             _discountProviders = discountProviders;
             _discountCalculator = discountCalculator;
             _timeHelper = timeHelper;
             _billHelper = billHelper;
+            _serviceChargeProvider = serviceChargeProvider;
         }
 
         public Guid CreateOrder()
@@ -115,6 +118,7 @@ namespace RestaurantErp.Core.Providers
             var discounts = _discountProviders.Select(i => i.Calculate(targetOrder));
 
             _discountCalculator.ApplyDiscount(bill, discounts);
+            _serviceChargeProvider.ApplyServiceCharge(bill);
 
             var publicBill = _billHelper.GetExternalBill(bill);
 

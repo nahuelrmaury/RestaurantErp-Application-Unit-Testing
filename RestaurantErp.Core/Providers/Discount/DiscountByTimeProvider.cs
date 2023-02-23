@@ -33,15 +33,13 @@ namespace RestaurantErp.Core.Providers
 
         public BillDiscountInfo Calculate(Order order)
         {
-            var t = order.Items
+            var billDiscountItemInfo = order.Items
                 .ToDictionary(
                     orderItem => orderItem,
                     orderItem => _discountById.Values.Where(discountInfo => discountInfo.StartTime <= TimeOnly.FromDateTime(orderItem.OrderingTime.ToUniversalTime())
                         && discountInfo.EndTime.Add(_settings.EndDiscountDelay) >= TimeOnly.FromDateTime(orderItem.OrderingTime.ToUniversalTime())
                         && orderItem.ProductId == discountInfo.ProductId))
-                .Where(appliedDiscountsByOrderItem => appliedDiscountsByOrderItem.Value.Count() > 0).ToArray();
-
-            var billDiscountItemInfo = t
+                .Where(appliedDiscountsByOrderItem => appliedDiscountsByOrderItem.Value.Count() > 0)
                 .ToDictionary(appliedDiscountsByOrderItem => appliedDiscountsByOrderItem.Key, appliedDiscountsByOrderItem => appliedDiscountsByOrderItem.Value.Sum(i => i.DiscountValue))
                 .Select(discountsSumRateByOrderItem => new BillDiscountItemInfo
                 {

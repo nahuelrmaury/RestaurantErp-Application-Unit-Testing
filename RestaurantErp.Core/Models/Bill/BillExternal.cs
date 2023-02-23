@@ -1,12 +1,10 @@
 ﻿namespace RestaurantErp.Core.Models.Bill
 {
-    public class Bill
+    public class BillExternal
     {
-        public Guid Id { get; set; }
-
         public Guid OrderId { get; set; }
 
-        public IEnumerable<BillItem> Items { get; set; }
+        public IEnumerable<BillItemExternal> Items { get; set; }
 
         public decimal Amount { get; set; }
 
