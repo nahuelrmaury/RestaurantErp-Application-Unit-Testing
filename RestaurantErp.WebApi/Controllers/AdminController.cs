@@ -1,11 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using RestaurantErp.Core.Contracts;
 using RestaurantErp.Core.Models.Discount;
 using RestaurantErp.Core.Models.Product;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace RestaurantErp.WebApi.Controllers
@@ -36,6 +33,14 @@ namespace RestaurantErp.WebApi.Controllers
         public async Task<IActionResult> AddDiscountByTimeSettings(DiscountByTimeSettings settings)
         {
             var discountId = _discountByTimeProvider.Add(settings);
+
+            return new ObjectResult(discountId);
+        }
+
+        [HttpDelete("RemoveDiscountByTimeSettings")]
+        public async Task<IActionResult> removeDiscountByTimeSettings(Guid id)
+        {
+            var discountId = _discountByTimeProvider.Remove(id);
 
             return new ObjectResult(discountId);
         }

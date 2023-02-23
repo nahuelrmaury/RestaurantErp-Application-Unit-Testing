@@ -1,11 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using RestaurantErp.Core.Contracts;
 using RestaurantErp.Core.Helpers;
@@ -38,16 +34,15 @@ namespace RestaurantErp.WebApi
 
             var productProvider = new ProductProvider();
 
-            services.AddSingleton<IDiscountByTimeProvider, DiscountByTimeProvider>()
-                .AddSingleton<IDiscountProvider, DiscountByTimeProvider>()
-                .AddSingleton<IDiscountCalculator, DiscountCalculator>()
+            services.AddSingleton<IDiscountCalculator, DiscountCalculator>()
                 .AddSingleton<IOrderProvider, OrderProvider>()
                 .AddSingleton<IServiceChargeProvider, ServiceChargeProvider>()
                 .AddSingleton<ITimeHelper, TimeHelper>()
                 .AddSingleton<BillHelper>()
 
-                //.AddSingleton<IPriceStorage, ProductProvider>()
-                //.AddSingleton<IProductProvider>(p => p.GetService<IPriceStorage>())
+                .AddSingleton<DiscountByTimeProvider>()
+                .AddSingleton<IDiscountByTimeProvider>(p => p.GetRequiredService<DiscountByTimeProvider>())
+                .AddSingleton<IDiscountProvider>(p => p.GetRequiredService<DiscountByTimeProvider>())
 
                 .AddSingleton<ProductProvider>()
                 .AddSingleton<IPriceStorage>(p => p.GetRequiredService<ProductProvider>())
