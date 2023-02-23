@@ -36,8 +36,8 @@ namespace RestaurantErp.Core.Providers
             var t = order.Items
                 .ToDictionary(
                     orderItem => orderItem,
-                    orderItem => _discountById.Values.Where(discountInfo => discountInfo.StartTime <= TimeOnly.FromDateTime(orderItem.OrderingTime)
-                        && discountInfo.EndTime.Add(_settings.EndDiscountDelay) >= TimeOnly.FromDateTime(orderItem.OrderingTime)
+                    orderItem => _discountById.Values.Where(discountInfo => discountInfo.StartTime <= TimeOnly.FromDateTime(orderItem.OrderingTime.ToUniversalTime())
+                        && discountInfo.EndTime.Add(_settings.EndDiscountDelay) >= TimeOnly.FromDateTime(orderItem.OrderingTime.ToUniversalTime())
                         && orderItem.ProductId == discountInfo.ProductId))
                 .Where(appliedDiscountsByOrderItem => appliedDiscountsByOrderItem.Value.Count() > 0).ToArray();
 
@@ -47,7 +47,8 @@ namespace RestaurantErp.Core.Providers
                 {
                     ItemId = discountsSumRateByOrderItem.Key.ItemId,
                     DiscountAmount = Math.Round(discountsSumRateByOrderItem.Key.Price * discountsSumRateByOrderItem.Value, 2)
-                });
+                })
+                .ToArray();
 
             var billDiscountInfo = new BillDiscountInfo
             {

@@ -1,3 +1,4 @@
+using Moq;
 using NUnit.Framework;
 using RestaurantErp.Core.Contracts;
 using RestaurantErp.Core.Models.Discount;
@@ -72,8 +73,19 @@ namespace Restaurant.Tests
             Assert.AreEqual(11, bill.Amount);
         }
 
-        [Test]
-        public void OneItemWithDiscountByTime()
+        [TestCase(2.5, "2023-1-20T18:59:59+00:00", 0.3, 0, 0, 19, 0, 2.5, 0.75, 1.75)]
+        [TestCase(2.5, "2023-1-20T19:00:00+00:00", 0.3, 0, 0, 19, 0, 2.5, 0.75, 1.75)]
+        [TestCase(2.5, "2023-1-20T19:00:01+00:00", 0.3, 0, 0, 19, 0, 2.5, 0, 2.5)]
+        public void CreateOneProduct_AddDiscountByTime_AmountIsCorrect(decimal productPrice, 
+            DateTime currentTime, 
+            decimal discountValue, 
+            int discountStartTimeHour, 
+            int discountStartTimeMinute, 
+            int discountEndTimeHour, 
+            int discountEndTimeMinute, 
+            decimal expectedAmount, 
+            decimal expectedDiscount, 
+            decimal expectedAmountDiscounted)
         {
             // Precondition
 
@@ -89,26 +101,27 @@ namespace Restaurant.Tests
                 MinimalProductPrice = 0
             });
 
-            ITimeHelper timeHelper = new TimeHelper();
+            var timeHelper = new Mock<ITimeHelper>();
+            timeHelper.Setup(mk => mk.DateTime).Returns(currentTime);
 
             IOrderProvider orderProvider = new OrderProvider(
                 (IPriceStorage)productProvider,
                 new[] { (IDiscountProvider)discountManager },
                 calculator,
-                timeHelper);
+                timeHelper.Object);
 
             var productId = productProvider.AddProduct(new AddProductRequest
             {
                 Name = "Starter",
-                Price = 2.5m
+                Price = productPrice
             });
 
             discountManager.Add(new DiscountByTimeSettings
             {
                 ProductId = productId,
-                StartTime = new TimeOnly(0, 0),
-                EndTime = new TimeOnly(19, 0),
-                DiscountValue = 0.3m
+                StartTime = new TimeOnly(discountStartTimeHour, discountStartTimeMinute),
+                EndTime = new TimeOnly(discountEndTimeHour, discountEndTimeMinute),
+                DiscountValue = discountValue
             });
 
             // Action
@@ -126,9 +139,12 @@ namespace Restaurant.Tests
 
             // Assert
 
-            Assert.AreEqual(2.5, bill.Amount);
-            Assert.AreEqual(1.75, bill.AmountDiscounted);
-            Assert.AreEqual(0.75, bill.Discount);
+            Assert.Multiple(() =>
+            {
+                Assert.AreEqual(expectedAmount, bill.Amount);
+                Assert.AreEqual(expectedAmountDiscounted, bill.AmountDiscounted);
+                Assert.AreEqual(expectedDiscount, bill.Discount);
+            });
         }
 
         [Test]

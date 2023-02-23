@@ -1,6 +1,4 @@
-﻿using RestaurantErp.Core.Enums;
-
-namespace RestaurantErp.Core.Models.Order
+﻿namespace RestaurantErp.Core.Models.Order
 {
     public class OrderItem
     {

@@ -1,6 +1,4 @@
-﻿using RestaurantErp.Core.Enums;
-
-namespace RestaurantErp.Core.Models.Discount
+﻿namespace RestaurantErp.Core.Models.Discount
 {
     public class DiscountByTimeSettings
     {
