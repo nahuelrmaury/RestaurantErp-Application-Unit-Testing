@@ -1,4 +1,6 @@
-﻿namespace RestaurantErp.Core
+﻿using RestaurantErp.Core.Enums;
+
+namespace RestaurantErp.Core.Models.Order
 {
     public class OrderItemRequest
     {

@@ -1,4 +1,4 @@
-﻿namespace RestaurantErp.Core
+﻿namespace RestaurantErp.Core.Enums
 {
     public enum DishEnum
     {

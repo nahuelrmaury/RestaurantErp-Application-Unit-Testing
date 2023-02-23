@@ -1,8 +1,11 @@
-﻿using System.Collections.Concurrent;
+﻿using RestaurantErp.Core.Contracts;
+using RestaurantErp.Core.Models.Bill;
+using RestaurantErp.Core.Models.Order;
+using System.Collections.Concurrent;
 
-namespace RestaurantErp.Core
+namespace RestaurantErp.Core.Providers
 {
-    public class OrderProvider: IOrderProvider
+    public class OrderProvider : IOrderProvider
     {
         private readonly ConcurrentBag<Order> _orderStorage = new ConcurrentBag<Order>();
 
@@ -46,7 +49,7 @@ namespace RestaurantErp.Core
                 OrderingTime = DateTime.UtcNow,
             };
 
-            for (var _ = 0; _< request.Count; _++)
+            for (var _ = 0; _ < request.Count; _++)
                 targetOrder.Items.Add(newItem);
         }
 
@@ -57,7 +60,7 @@ namespace RestaurantErp.Core
             // Assumption:
             // we should cancell all items in order of their ordering time
             var targetItems = targetOrder.Items
-                .Where(i => i.Dish == request.Dish 
+                .Where(i => i.Dish == request.Dish
                     && request.GuestNumber == request.GuestNumber
                     && !i.IsCancelled)
                 .OrderBy(i => i.OrderingTime)
@@ -66,7 +69,7 @@ namespace RestaurantErp.Core
             if (targetItems.Count() < request.Count)
                 throw new ArgumentOutOfRangeException($"Gurst '{request.GuestNumber}' try to remove '{request.Count}' dishes '{request.Dish}', but order contains only '{targetItems.Count()}' of them");
 
-            foreach(var targetitem in targetItems)
+            foreach (var targetitem in targetItems)
             {
                 targetitem.IsCancelled = true;
             }

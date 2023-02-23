@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Models\Bill\" />
     <Folder Include="Extensions\" />
   </ItemGroup>
 

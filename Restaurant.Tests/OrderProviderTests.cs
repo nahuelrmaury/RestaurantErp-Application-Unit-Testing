@@ -11,10 +11,10 @@ namespace Restaurant.Tests
         {
             // Precondition
 
-            var priceStorage = new PriceStorage();
-            var discountManager = new DiscountByTimeManager();
+            //var priceStorage = new PriceStorage();
+            //var discountManager = new DiscountByTimeManager();
             
-            var provider = new OrderProvider(priceStorage, new[] { discountManager });
+            //var provider = new OrderProvider(priceStorage, new[] { discountManager });
 
             //discountManager.Add((order) =>
             //{

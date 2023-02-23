@@ -1,4 +1,7 @@
-﻿namespace RestaurantErp.Core
+﻿using RestaurantErp.Core.Models.Bill;
+using RestaurantErp.Core.Models.Discount;
+
+namespace RestaurantErp.Core.Providers
 {
     public class DiscountCalculator
     {
@@ -44,7 +47,7 @@
 
                 targetItem.AmountDiscounted = itemCalculatedPrice < _settings.MinimalProductPrice ? _settings.MinimalProductPrice : itemCalculatedPrice;
 
-                targetItem.Discount =  targetItem.Amount - targetItem.AmountDiscounted;
+                targetItem.Discount = targetItem.Amount - targetItem.AmountDiscounted;
             }
 
             bill.Discount = bill.Items.Sum(i => i.Discount);

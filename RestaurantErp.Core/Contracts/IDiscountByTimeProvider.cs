@@ -1,6 +1,8 @@
-﻿namespace RestaurantErp.Core
+﻿using RestaurantErp.Core.Models.Discount;
+
+namespace RestaurantErp.Core.Contracts
 {
-    public interface IDiscountByTimeProvider: IDiscountProvider
+    public interface IDiscountByTimeProvider : IDiscountProvider
     {
         Guid Add(DiscountByTimeSettings settings);
 

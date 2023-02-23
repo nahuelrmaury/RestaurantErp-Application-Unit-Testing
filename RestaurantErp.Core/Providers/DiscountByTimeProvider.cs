@@ -1,6 +1,9 @@
-﻿using System.Collections.Concurrent;
+﻿using RestaurantErp.Core.Contracts;
+using RestaurantErp.Core.Models.Discount;
+using RestaurantErp.Core.Models.Order;
+using System.Collections.Concurrent;
 
-namespace RestaurantErp.Core
+namespace RestaurantErp.Core.Providers
 {
     public class DiscountByTimeProvider : IDiscountProvider
     {
@@ -40,7 +43,7 @@ namespace RestaurantErp.Core
                 .Select(discountsSumRateByOrderItem => new BillDiscountItemInfo
                 {
                     ItemId = discountsSumRateByOrderItem.Key.ItemId,
-                    DiscountAmount = Math.Round(discountsSumRateByOrderItem.Key.Price * discountsSumRateByOrderItem.Value, 2) 
+                    DiscountAmount = Math.Round(discountsSumRateByOrderItem.Key.Price * discountsSumRateByOrderItem.Value, 2)
                 });
 
             var billDiscountInfo = new BillDiscountInfo

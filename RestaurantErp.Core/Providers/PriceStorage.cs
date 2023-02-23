@@ -1,8 +1,10 @@
-﻿using System.Collections.Concurrent;
+﻿using RestaurantErp.Core.Contracts;
+using RestaurantErp.Core.Enums;
+using System.Collections.Concurrent;
 
-namespace RestaurantErp.Core
+namespace RestaurantErp.Core.Providers
 {
-    public class PriceStorage: IPriceStorage
+    public class PriceStorage : IPriceStorage
     {
         private ConcurrentDictionary<DishEnum, decimal> _priceByProduct = new ConcurrentDictionary<DishEnum, decimal>()
         {

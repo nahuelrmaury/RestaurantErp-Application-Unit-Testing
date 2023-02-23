@@ -1,4 +1,7 @@
-﻿namespace RestaurantErp.Core
+﻿using RestaurantErp.Core.Models.Bill;
+using RestaurantErp.Core.Models.Order;
+
+namespace RestaurantErp.Core.Contracts
 {
     public interface IOrderProvider
     {
