@@ -1,5 +1,5 @@
-﻿using RestaurantErp.Core.Models.Bill;
-using RestaurantErp.Core.Providers;
+﻿using RestaurantErp.Core.Contracts;
+using RestaurantErp.Core.Models.Bill;
 
 namespace RestaurantErp.Core.Helpers
 {

@@ -1,6 +1,6 @@
 ﻿using RestaurantErp.Core.Models.Product;
 
-namespace RestaurantErp.Core.Providers
+namespace RestaurantErp.Core.Contracts
 {
     public interface IProductProvider
     {

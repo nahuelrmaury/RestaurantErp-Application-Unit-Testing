@@ -3,11 +3,13 @@ using Moq;
 using NUnit.Framework;
 using RestaurantErp.Core.Contracts;
 using RestaurantErp.Core.Helpers;
+using RestaurantErp.Core.Models;
 using RestaurantErp.Core.Models.Bill;
 using RestaurantErp.Core.Models.Discount;
 using RestaurantErp.Core.Models.Order;
 using RestaurantErp.Core.Models.Product;
 using RestaurantErp.Core.Providers;
+using RestaurantErp.Core.Providers.Discount;
 using System;
 
 namespace Restaurant.Tests

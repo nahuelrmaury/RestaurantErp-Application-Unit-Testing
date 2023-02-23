@@ -1,4 +1,6 @@
-﻿namespace RestaurantErp.Core.Contracts
+﻿using RestaurantErp.Core.Contracts;
+
+namespace RestaurantErp.Core.Helpers
 {
     public class TimeHelper : ITimeHelper
     {

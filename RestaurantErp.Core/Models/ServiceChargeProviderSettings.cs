@@ -1,4 +1,4 @@
-﻿namespace RestaurantErp.Core.Providers
+﻿namespace RestaurantErp.Core.Models
 {
     public class ServiceChargeProviderSettings
     {

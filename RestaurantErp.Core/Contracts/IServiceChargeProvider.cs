@@ -1,6 +1,6 @@
 ﻿using RestaurantErp.Core.Models.Bill;
 
-namespace RestaurantErp.Core.Providers
+namespace RestaurantErp.Core.Contracts
 {
     public interface IServiceChargeProvider
     {

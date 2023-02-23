@@ -1,4 +1,6 @@
-﻿using RestaurantErp.Core.Models.Bill;
+﻿using RestaurantErp.Core.Contracts;
+using RestaurantErp.Core.Models;
+using RestaurantErp.Core.Models.Bill;
 
 namespace RestaurantErp.Core.Providers
 {

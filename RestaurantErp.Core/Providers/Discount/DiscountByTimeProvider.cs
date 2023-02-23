@@ -4,7 +4,7 @@ using RestaurantErp.Core.Models.Discount;
 using RestaurantErp.Core.Models.Order;
 using System.Collections.Concurrent;
 
-namespace RestaurantErp.Core.Providers
+namespace RestaurantErp.Core.Providers.Discount
 {
     public class DiscountByTimeProvider : IDiscountByTimeProvider
     {
