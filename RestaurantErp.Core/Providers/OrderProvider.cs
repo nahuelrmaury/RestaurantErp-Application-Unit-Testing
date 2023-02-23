@@ -97,7 +97,8 @@ namespace RestaurantErp.Core.Providers
                     PersonId = i.PersonId,
                     Amount = i.Price,
                     AmountDiscounted = i.Price
-                });
+                })
+                .ToArray();
 
             var bill = new Bill
             {

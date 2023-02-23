@@ -52,7 +52,7 @@ namespace RestaurantErp.Core.Providers
             }
 
             bill.Discount = bill.Items.Sum(i => i.Discount);
-            bill.AmountDiscounted = bill.Items.Sum(i => i.Amount);
+            bill.AmountDiscounted = bill.Items.Sum(i => i.AmountDiscounted);
         }
     }
 }
