@@ -6,7 +6,7 @@ namespace RestaurantErp.Core.Models.Bill
     {
         public Guid ItemId { get; set; }
 
-        public DishEnum Dish { get; set; }
+        public Guid ProductId { get; set; }
 
         public int PersonId { get; set; }
 

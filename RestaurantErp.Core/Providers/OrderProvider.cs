@@ -9,17 +9,20 @@ namespace RestaurantErp.Core.Providers
     {
         private readonly ConcurrentBag<Order> _orderStorage = new ConcurrentBag<Order>();
 
-        private readonly IPriceStorageV1 _priceStorage;
+        private readonly IPriceStorage _priceStorage;
         private readonly IEnumerable<IDiscountProvider> _discountProviders;
-        private readonly DiscountCalculator _discountCalculator;
+        private readonly IDiscountCalculator _discountCalculator;
+        private readonly ITimeHelper _timeHelper;
 
-        public OrderProvider(IPriceStorageV1 priceStorage,
+        public OrderProvider(IPriceStorage priceStorage,
             IEnumerable<IDiscountProvider> discountProviders,
-            DiscountCalculator discountCalculator)
+            IDiscountCalculator discountCalculator,
+            ITimeHelper timeHelper)
         {
             _priceStorage = priceStorage;
             _discountProviders = discountProviders;
             _discountCalculator = discountCalculator;
+            _timeHelper = timeHelper;
         }
 
         public Guid CreateOrder()
@@ -43,10 +46,10 @@ namespace RestaurantErp.Core.Providers
             var newItem = new OrderItem
             {
                 ItemId = request.OrderId,
-                Price = _priceStorage.GetProductPrice(request.Dish),
+                Price = _priceStorage.GetProductPrice(request.ProductId),
                 PersonId = request.GuestNumber,
-                Dish = request.Dish,
-                OrderingTime = DateTime.UtcNow,
+                ProductId = request.ProductId,
+                OrderingTime = _timeHelper.DateTime
             };
 
             for (var _ = 0; _ < request.Count; _++)
@@ -60,14 +63,14 @@ namespace RestaurantErp.Core.Providers
             // Assumption:
             // we should cancell all items in order of their ordering time
             var targetItems = targetOrder.Items
-                .Where(i => i.Dish == request.Dish
+                .Where(i => i.ProductId == request.ProductId
                     && request.GuestNumber == request.GuestNumber
                     && !i.IsCancelled)
                 .OrderBy(i => i.OrderingTime)
                 .Take(request.Count);
 
             if (targetItems.Count() < request.Count)
-                throw new ArgumentOutOfRangeException($"Gurst '{request.GuestNumber}' try to remove '{request.Count}' dishes '{request.Dish}', but order contains only '{targetItems.Count()}' of them");
+                throw new ArgumentOutOfRangeException($"Gurst '{request.GuestNumber}' try to remove '{request.Count}' dishes '{request.ProductId}', but order contains only '{targetItems.Count()}' of them");
 
             foreach (var targetitem in targetItems)
             {
@@ -87,7 +90,7 @@ namespace RestaurantErp.Core.Providers
                 .Where(i => !i.IsCancelled)
                 .Select(i => new BillItem
                 {
-                    Dish = i.Dish,
+                    ProductId = i.ProductId,
                     PersonId = i.PersonId,
                     Amount = i.Price,
                     AmountDiscounted = i.Price

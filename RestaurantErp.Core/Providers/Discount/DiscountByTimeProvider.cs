@@ -1,16 +1,17 @@
 ﻿using RestaurantErp.Core.Contracts;
+using RestaurantErp.Core.Extensions;
 using RestaurantErp.Core.Models.Discount;
 using RestaurantErp.Core.Models.Order;
 using System.Collections.Concurrent;
 
 namespace RestaurantErp.Core.Providers
 {
-    public class DiscountByTimeProvider : IDiscountProvider
+    public class DiscountByTimeProvider : IDiscountByTimeProvider
     {
         private readonly ConcurrentDictionary<Guid, DiscountByTimeSettings> _discountById = new ConcurrentDictionary<Guid, DiscountByTimeSettings>();
         private readonly DiscountByTimeProviderSettings _settings;
 
-        private DiscountByTimeProvider(DiscountByTimeProviderSettings settings)
+        public DiscountByTimeProvider(DiscountByTimeProviderSettings settings)
         {
             _settings = settings;
         }
@@ -28,7 +29,7 @@ namespace RestaurantErp.Core.Providers
 
         // TODO:
         // change to return deepcopy
-        public IDictionary<Guid, DiscountByTimeSettings> GetAll() => _discountById;
+        public IDictionary<Guid, DiscountByTimeSettings> GetAll() => _discountById.DeepCopy();
 
         public BillDiscountInfo Calculate(Order order)
         {
@@ -37,7 +38,7 @@ namespace RestaurantErp.Core.Providers
                     orderItem => orderItem,
                     orderItem => _discountById.Values.Where(discountInfo => discountInfo.StartTime <= TimeOnly.FromDateTime(orderItem.OrderingTime)
                         && discountInfo.EndTime.Add(_settings.EndDiscountDelay) >= TimeOnly.FromDateTime(orderItem.OrderingTime)
-                        && orderItem.Dish == discountInfo.Dish))
+                        && orderItem.ProductId == discountInfo.ProductId))
                 .Where(appliedDiscountsByOrderItem => appliedDiscountsByOrderItem.Value.Count() > 0)
                 .ToDictionary(appliedDiscountsByOrderItem => appliedDiscountsByOrderItem.Key, appliedDiscountsByOrderItem => appliedDiscountsByOrderItem.Value.Sum(i => i.DiscountValue))
                 .Select(discountsSumRateByOrderItem => new BillDiscountItemInfo

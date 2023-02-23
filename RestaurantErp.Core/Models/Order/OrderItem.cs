@@ -6,7 +6,7 @@ namespace RestaurantErp.Core.Models.Order
     {
         public Guid ItemId { get; set; }
 
-        public DishEnum Dish { get; set; }
+        public Guid ProductId { get; set; }
 
         public DateTime OrderingTime { get; set; }
 

@@ -1,9 +1,10 @@
-﻿using RestaurantErp.Core.Models.Bill;
+﻿using RestaurantErp.Core.Contracts;
+using RestaurantErp.Core.Models.Bill;
 using RestaurantErp.Core.Models.Discount;
 
 namespace RestaurantErp.Core.Providers
 {
-    public class DiscountCalculator
+    public class DiscountCalculator: IDiscountCalculator
     {
         private DiscountCalculatorSettings _settings;
 

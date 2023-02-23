@@ -8,7 +8,7 @@ namespace RestaurantErp.Core.Models.Order
 
         public int GuestNumber { get; set; }
 
-        public DishEnum Dish { get; set; }
+        public Guid ProductId { get; set; }
 
         public int Count { get; set; }
     }

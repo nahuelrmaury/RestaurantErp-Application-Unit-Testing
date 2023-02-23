@@ -1,5 +1,11 @@
 using NUnit.Framework;
 using RestaurantErp.Core;
+using RestaurantErp.Core.Contracts;
+using RestaurantErp.Core.Models.Discount;
+using RestaurantErp.Core.Models.Order;
+using RestaurantErp.Core.Models.Product;
+using RestaurantErp.Core.Providers;
+using System;
 using System.Linq;
 
 namespace Restaurant.Tests
@@ -11,18 +17,82 @@ namespace Restaurant.Tests
         {
             // Precondition
 
-            //var priceStorage = new PriceStorage();
-            //var discountManager = new DiscountByTimeManager();
+            var productProvider = new ProductProvider();
+
+            IDiscountByTimeProvider discountManager = new DiscountByTimeProvider(new DiscountByTimeProviderSettings
+            {
+                EndDiscountDelay = TimeSpan.Zero
+            });
+
+            IDiscountCalculator calculator = new DiscountCalculator(new DiscountCalculatorSettings
+            {
+                MinimalProductPrice = 0
+            });
+
+            ITimeHelper timeHelper = new TimeHelper();
             
-            //var provider = new OrderProvider(priceStorage, new[] { discountManager });
+            IOrderProvider orderProvider = new OrderProvider(
+                (IPriceStorage)productProvider, 
+                new[] {(IDiscountProvider)discountManager }, 
+                calculator,
+                timeHelper);
 
-            //discountManager.Add((order) =>
-            //{
-            //    order.Items.Where(i => i.Dish == DishEnum.Drink).ToList().ForEach(i => i.);
+            var starterId = productProvider.AddProduct(new AddProductRequest
+            {
+                Name = "Starter",
+                Price = 4
+            });
 
-            //});
+            var mainId =  productProvider.AddProduct(new AddProductRequest
+            {
+                Name = "Main",
+                Price = 7
+            });
+
+            var drinkId = productProvider.AddProduct(new AddProductRequest
+            {
+                Name = "Drink",
+                Price = 2.5m
+            });
+
+            discountManager.Add(new DiscountByTimeSettings
+            {
+                ProductId = drinkId,
+                StartTime = new TimeOnly(0, 0),
+                EndTime = new TimeOnly(19, 0)
+            });
 
             // Action
+
+            var orderId = orderProvider.CreateOrder();
+
+            orderProvider.AddItem(new OrderItemRequest
+            {
+                OrderId = orderId,
+                Count = 4,
+                ProductId = starterId
+            });
+
+            orderProvider.AddItem(new OrderItemRequest
+            {
+                OrderId = orderId,
+                Count = 4,
+                ProductId = starterId
+            });
+
+            orderProvider.AddItem(new OrderItemRequest
+            {
+                OrderId = orderId,
+                Count = 4,
+                ProductId = starterId
+            });
+
+            orderProvider.AddItem(new OrderItemRequest
+            {
+                OrderId = orderId,
+                Count = 4,
+                ProductId = starterId
+            });
 
             // Assert
         }
