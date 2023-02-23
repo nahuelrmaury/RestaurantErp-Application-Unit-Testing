@@ -9,11 +9,11 @@ namespace RestaurantErp.Core.Providers
     {
         private readonly ConcurrentBag<Order> _orderStorage = new ConcurrentBag<Order>();
 
-        private readonly IPriceStorage _priceStorage;
+        private readonly IPriceStorageV1 _priceStorage;
         private readonly IEnumerable<IDiscountProvider> _discountProviders;
         private readonly DiscountCalculator _discountCalculator;
 
-        public OrderProvider(IPriceStorage priceStorage,
+        public OrderProvider(IPriceStorageV1 priceStorage,
             IEnumerable<IDiscountProvider> discountProviders,
             DiscountCalculator discountCalculator)
         {
