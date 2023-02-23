@@ -40,15 +40,15 @@ namespace RestaurantErp.Core.Providers
 
         public void ApplyDiscount(Bill bill, BillDiscountInfo discountInfo)
         {
-            foreach (var itemInfo in discountInfo.Items)
+            foreach (var discountItemInfo in discountInfo.Items)
             {
-                var targetItem = bill.Items.Single(i => i.ItemId == itemInfo.ItemId);
+                var billItem = bill.Items.Single(i => i.OrderItemId == discountItemInfo.ItemId);
 
-                var itemCalculatedPrice = targetItem.Amount - itemInfo.DiscountAmount;
+                var itemCalculatedPrice = billItem.Amount - discountItemInfo.DiscountAmount;
 
-                targetItem.AmountDiscounted = itemCalculatedPrice < _settings.MinimalProductPrice ? _settings.MinimalProductPrice : itemCalculatedPrice;
+                billItem.AmountDiscounted = itemCalculatedPrice < _settings.MinimalProductPrice ? _settings.MinimalProductPrice : itemCalculatedPrice;
 
-                targetItem.Discount = targetItem.Amount - targetItem.AmountDiscounted;
+                billItem.Discount = billItem.Amount - billItem.AmountDiscounted;
             }
 
             bill.Discount = bill.Items.Sum(i => i.Discount);

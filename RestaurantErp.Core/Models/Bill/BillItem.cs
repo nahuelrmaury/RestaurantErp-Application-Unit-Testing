@@ -1,10 +1,8 @@
-﻿using RestaurantErp.Core.Enums;
-
-namespace RestaurantErp.Core.Models.Bill
+﻿namespace RestaurantErp.Core.Models.Bill
 {
     public class BillItem
     {
-        public Guid ItemId { get; set; }
+        public Guid OrderItemId { get; set; }
 
         public Guid ProductId { get; set; }
 

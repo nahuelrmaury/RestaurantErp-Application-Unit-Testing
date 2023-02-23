@@ -43,17 +43,19 @@ namespace RestaurantErp.Core.Providers
         {
             var targetOrder = _orderStorage.Single(i => i.Id == request.OrderId);
 
-            var newItem = new OrderItem
-            {
-                ItemId = request.OrderId,
-                Price = _priceStorage.GetProductPrice(request.ProductId),
-                PersonId = request.GuestNumber,
-                ProductId = request.ProductId,
-                OrderingTime = _timeHelper.DateTime
-            };
-
             for (var _ = 0; _ < request.Count; _++)
+            {
+                var newItem = new OrderItem
+                {
+                    ItemId = Guid.NewGuid(),
+                    Price = _priceStorage.GetProductPrice(request.ProductId),
+                    PersonId = request.GuestNumber,
+                    ProductId = request.ProductId,
+                    OrderingTime = _timeHelper.DateTime
+                };
+
                 targetOrder.Items.Add(newItem);
+            }
         }
 
         public void CancelItem(OrderItemRequest request)
@@ -91,6 +93,7 @@ namespace RestaurantErp.Core.Providers
                 .Select(i => new BillItem
                 {
                     ProductId = i.ProductId,
+                    OrderItemId = i.ItemId,
                     PersonId = i.PersonId,
                     Amount = i.Price,
                     AmountDiscounted = i.Price
