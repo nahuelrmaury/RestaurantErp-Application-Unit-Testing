@@ -81,7 +81,7 @@ namespace Restaurant.Tests
                 AmountDiscounted = 11,
                 Discount = 0,
                 OrderId = orderId,
-                Items = new []
+                Items = new[]
                 {
                     new BillItemExternal
                     {
@@ -110,15 +110,15 @@ namespace Restaurant.Tests
         [TestCase(25, "2023-1-20T18:59:59+00:00", 0.1, 0, 0, 19, 0, 25, 2.5, 22.5)]
         [TestCase(25, "2023-1-20T19:00:00+00:00", 0.1, 0, 0, 19, 0, 25, 2.5, 22.5)]
         [TestCase(25, "2023-1-20T19:00:01+00:00", 0.1, 0, 0, 19, 0, 25, 0, 25)]
-        public void CreateOneProductAndDiscountByTime_Ckeckout_AmountIsCorrect(decimal productPrice, 
-            DateTime currentTime, 
-            decimal discountValue, 
-            int discountStartTimeHour, 
-            int discountStartTimeMinute, 
-            int discountEndTimeHour, 
-            int discountEndTimeMinute, 
-            decimal expectedAmount, 
-            decimal expectedDiscount, 
+        public void CreateOneProductAndDiscountByTime_Ckeckout_AmountIsCorrect(decimal productPrice,
+            DateTime currentTime,
+            decimal discountValue,
+            int discountStartTimeHour,
+            int discountStartTimeMinute,
+            int discountEndTimeHour,
+            int discountEndTimeMinute,
+            decimal expectedAmount,
+            decimal expectedDiscount,
             decimal expectedAmountDiscounted)
         {
             // Precondition
@@ -200,10 +200,10 @@ namespace Restaurant.Tests
             });
 
             ITimeHelper timeHelper = new TimeHelper();
-            
+
             IOrderProvider orderProvider = new OrderProvider(
-                (IPriceStorage)productProvider, 
-                new[] {(IDiscountProvider)discountManager }, 
+                (IPriceStorage)productProvider,
+                new[] { (IDiscountProvider)discountManager },
                 calculator,
                 timeHelper,
                 new BillHelper(productProvider));
@@ -214,7 +214,7 @@ namespace Restaurant.Tests
                 Price = 4
             });
 
-            var mainId =  productProvider.AddProduct(new AddProductRequest
+            var mainId = productProvider.AddProduct(new AddProductRequest
             {
                 Name = "Main",
                 Price = 7
@@ -266,6 +266,559 @@ namespace Restaurant.Tests
             Assert.AreEqual(54, bill.Amount);
             Assert.AreEqual(51, bill.AmountDiscounted);
             Assert.AreEqual(3, bill.Discount);
+        }
+
+        [Test]
+        public void SeveralItemsWithDiscountSeveralTooLate_Checkout_BillIsCorrect()
+        {
+            // Precondition
+
+            var productProvider = new ProductProvider();
+
+            IDiscountByTimeProvider discountManager = new DiscountByTimeProvider(new DiscountByTimeProviderSettings
+            {
+                EndDiscountDelay = TimeSpan.Zero
+            });
+
+            IDiscountCalculator calculator = new DiscountCalculator(new DiscountCalculatorSettings
+            {
+                MinimalProductPrice = 0
+            });
+
+            var timeHelper = new Mock<ITimeHelper>();
+
+            IOrderProvider orderProvider = new OrderProvider(
+                (IPriceStorage)productProvider,
+                new[] { (IDiscountProvider)discountManager },
+                calculator,
+                timeHelper.Object,
+                new BillHelper(productProvider));
+
+            var requestProduct1 = new AddProductRequest
+            {
+                Name = "Starter",
+                Price = 4
+            };
+
+            var requestProduct2 = new AddProductRequest
+            {
+                Name = "Main",
+                Price = 7
+            };
+
+            var requestProduct3 = new AddProductRequest
+            {
+                Name = "Drink",
+                Price = 2.5m
+            };
+
+
+            var productId1 = productProvider.AddProduct(requestProduct1);
+            var productId2 = productProvider.AddProduct(requestProduct2);
+            var productId3 = productProvider.AddProduct(requestProduct3);
+
+            discountManager.Add(new DiscountByTimeSettings
+            {
+                ProductId = productId3,
+                StartTime = new TimeOnly(0, 0),
+                EndTime = new TimeOnly(19, 0),
+                DiscountValue = 0.3m
+            });
+
+            timeHelper.Setup(mk => mk.DateTime).Returns(DateTime.Parse("2023-1-20T18:59:59+00:00"));
+
+            // Action
+
+            var orderId = orderProvider.CreateOrder();
+
+            orderProvider.AddItem(new OrderItemRequest
+            {
+                OrderId = orderId,
+                Count = 1,
+                ProductId = productId1
+            });
+
+            orderProvider.AddItem(new OrderItemRequest
+            {
+                OrderId = orderId,
+                Count = 2,
+                ProductId = productId2
+            });
+
+            orderProvider.AddItem(new OrderItemRequest
+            {
+                OrderId = orderId,
+                Count = 2,
+                ProductId = productId3
+            });
+
+            timeHelper.Setup(mk => mk.DateTime).Returns(DateTime.Parse("2023-1-20T20:00:00+00:00"));
+
+            orderProvider.AddItem(new OrderItemRequest
+            {
+                OrderId = orderId,
+                Count = 2,
+                ProductId = productId2
+            });
+
+            orderProvider.AddItem(new OrderItemRequest
+            {
+                OrderId = orderId,
+                Count = 2,
+                ProductId = productId3
+            });
+
+            var actual = orderProvider.Checkout(orderId);
+
+            //Assert
+
+            var expected = new BillExternal
+            {
+                Amount = 42m,
+                AmountDiscounted = 40.5m,
+                Discount = 1.5m,
+                OrderId = orderId,
+                Items = new[]
+                {
+                    new BillItemExternal
+                    {
+                        Amount = 4,
+                        Discount = 0,
+                        AmountDiscounted = 4,
+                        PersonId = 0,
+                        ProductName = requestProduct1.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 7,
+                        Discount = 0,
+                        AmountDiscounted = 7,
+                        PersonId = 0,
+                        ProductName = requestProduct2.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 7,
+                        Discount = 0,
+                        AmountDiscounted = 7,
+                        ProductName = requestProduct2.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 7,
+                        Discount = 0,
+                        AmountDiscounted = 7,
+                        PersonId = 0,
+                        ProductName = requestProduct2.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 7,
+                        Discount = 0,
+                        AmountDiscounted = 7,
+                        ProductName = requestProduct2.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 2.5m,
+                        Discount = 0,
+                        AmountDiscounted = 2.5m,
+                        PersonId = 0,
+                        ProductName = requestProduct3.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 2.5m,
+                        Discount = 0,
+                        AmountDiscounted = 2.5m,
+                        ProductName = requestProduct3.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 2.5m,
+                        Discount = 0.75m,
+                        AmountDiscounted = 1.75m,
+                        PersonId = 0,
+                        ProductName = requestProduct3.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 2.5m,
+                        Discount = 0.75m,
+                        AmountDiscounted = 1.75m,
+                        ProductName = requestProduct3.Name
+                    }
+                }
+            };
+
+            actual.Should().BeEquivalentTo(expected);
+        }
+
+        [Test]
+        public void ThreeProductsBy4Items_Checkout_BillIsCorrect()
+        {
+            // Precondition
+
+            var productProvider = new ProductProvider();
+
+            IDiscountByTimeProvider discountManager = new DiscountByTimeProvider(new DiscountByTimeProviderSettings
+            {
+                EndDiscountDelay = TimeSpan.Zero
+            });
+
+            IDiscountCalculator calculator = new DiscountCalculator(new DiscountCalculatorSettings
+            {
+                MinimalProductPrice = 0
+            });
+
+            IOrderProvider orderProvider = new OrderProvider(
+                (IPriceStorage)productProvider,
+                new[] { (IDiscountProvider)discountManager },
+                calculator,
+                new TimeHelper(),
+                new BillHelper(productProvider));
+
+            var requestProduct1 = new AddProductRequest
+            {
+                Name = "Starter",
+                Price = 4
+            };
+
+            var requestProduct2 = new AddProductRequest
+            {
+                Name = "Main",
+                Price = 7
+            };
+
+            var requestProduct3 = new AddProductRequest
+            {
+                Name = "Drink",
+                Price = 2.5m
+            };
+
+            var productId1 = productProvider.AddProduct(requestProduct1);
+            var productId2 = productProvider.AddProduct(requestProduct2);
+            var productId3 = productProvider.AddProduct(requestProduct3);
+
+            // Action
+
+            var orderId = orderProvider.CreateOrder();
+
+            orderProvider.AddItem(new OrderItemRequest
+            {
+                OrderId = orderId,
+                Count = 4,
+                ProductId = productId1
+            });
+
+            orderProvider.AddItem(new OrderItemRequest
+            {
+                OrderId = orderId,
+                Count = 4,
+                ProductId = productId2
+            });
+
+            orderProvider.AddItem(new OrderItemRequest
+            {
+                OrderId = orderId,
+                Count = 4,
+                ProductId = productId3
+            });
+
+            var actual = orderProvider.Checkout(orderId);
+
+            //Assert
+
+            var expected = new BillExternal
+            {
+                Amount = 54,
+                AmountDiscounted = 54,
+                Discount = 0,
+                OrderId = orderId,
+                Items = new[]
+                {
+                    new BillItemExternal
+                    {
+                        Amount = 4,
+                        Discount = 0,
+                        AmountDiscounted = 4,
+                        PersonId = 0,
+                        ProductName = requestProduct1.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 4,
+                        Discount = 0,
+                        AmountDiscounted = 4,
+                        PersonId = 0,
+                        ProductName = requestProduct1.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 4,
+                        Discount = 0,
+                        AmountDiscounted = 4,
+                        PersonId = 0,
+                        ProductName = requestProduct1.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 4,
+                        Discount = 0,
+                        AmountDiscounted = 4,
+                        PersonId = 0,
+                        ProductName = requestProduct1.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 7,
+                        Discount = 0,
+                        AmountDiscounted = 7,
+                        PersonId = 0,
+                        ProductName = requestProduct2.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 7,
+                        Discount = 0,
+                        AmountDiscounted = 7,
+                        PersonId = 0,
+                        ProductName = requestProduct2.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 7,
+                        Discount = 0,
+                        AmountDiscounted = 7,
+                        PersonId = 0,
+                        ProductName = requestProduct2.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 7,
+                        Discount = 0,
+                        AmountDiscounted = 7,
+                        PersonId = 0,
+                        ProductName = requestProduct2.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 2.5m,
+                        Discount = 0,
+                        AmountDiscounted = 2.5m,
+                        PersonId = 0,
+                        ProductName = requestProduct3.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 2.5m,
+                        Discount = 0,
+                        AmountDiscounted = 2.5m,
+                        PersonId = 0,
+                        ProductName = requestProduct3.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 2.5m,
+                        Discount = 0,
+                        AmountDiscounted = 2.5m,
+                        PersonId = 0,
+                        ProductName = requestProduct3.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 2.5m,
+                        Discount = 0,
+                        AmountDiscounted = 2.5m,
+                        PersonId = 0,
+                        ProductName = requestProduct3.Name
+                    }
+                }
+            };
+
+            actual.Should().BeEquivalentTo(expected);
+        }
+
+        [Test]
+        public void ThreeProductsBy4Items_CancellAllProductsBy1QtyAndCheckout_BillIsCorrect()
+        {
+            // Precondition
+
+            var productProvider = new ProductProvider();
+
+            IDiscountByTimeProvider discountManager = new DiscountByTimeProvider(new DiscountByTimeProviderSettings
+            {
+                EndDiscountDelay = TimeSpan.Zero
+            });
+
+            IDiscountCalculator calculator = new DiscountCalculator(new DiscountCalculatorSettings
+            {
+                MinimalProductPrice = 0
+            });
+
+            IOrderProvider orderProvider = new OrderProvider(
+                (IPriceStorage)productProvider,
+                new[] { (IDiscountProvider)discountManager },
+                calculator,
+                new TimeHelper(),
+                new BillHelper(productProvider));
+
+            var requestProduct1 = new AddProductRequest
+            {
+                Name = "Starter",
+                Price = 4
+            };
+
+            var requestProduct2 = new AddProductRequest
+            {
+                Name = "Main",
+                Price = 7
+            };
+
+            var requestProduct3 = new AddProductRequest
+            {
+                Name = "Drink",
+                Price = 2.5m
+            };
+
+            var productId1 = productProvider.AddProduct(requestProduct1);
+            var productId2 = productProvider.AddProduct(requestProduct2);
+            var productId3 = productProvider.AddProduct(requestProduct3);
+
+            // Action
+
+            var orderId = orderProvider.CreateOrder();
+
+            orderProvider.AddItem(new OrderItemRequest
+            {
+                OrderId = orderId,
+                Count = 4,
+                ProductId = productId1
+            });
+
+            orderProvider.AddItem(new OrderItemRequest
+            {
+                OrderId = orderId,
+                Count = 4,
+                ProductId = productId2
+            });
+
+            orderProvider.AddItem(new OrderItemRequest
+            {
+                OrderId = orderId,
+                Count = 4,
+                ProductId = productId3
+            });
+
+            orderProvider.CancelItem(new OrderItemRequest
+            {
+                OrderId = orderId,
+                Count = 1,
+                ProductId = productId1
+            });
+
+            orderProvider.CancelItem(new OrderItemRequest
+            {
+                OrderId = orderId,
+                Count = 1,
+                ProductId = productId2
+            });
+
+            orderProvider.CancelItem(new OrderItemRequest
+            {
+                OrderId = orderId,
+                Count = 1,
+                ProductId = productId3
+            });
+
+            var actual = orderProvider.Checkout(orderId);
+
+            //Assert
+
+            var expected = new BillExternal
+            {
+                Amount = 40.5m,
+                AmountDiscounted = 40.5m,
+                Discount = 0,
+                OrderId = orderId,
+                Items = new[]
+                {
+                    new BillItemExternal
+                    {
+                        Amount = 4,
+                        Discount = 0,
+                        AmountDiscounted = 4,
+                        PersonId = 0,
+                        ProductName = requestProduct1.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 4,
+                        Discount = 0,
+                        AmountDiscounted = 4,
+                        PersonId = 0,
+                        ProductName = requestProduct1.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 4,
+                        Discount = 0,
+                        AmountDiscounted = 4,
+                        PersonId = 0,
+                        ProductName = requestProduct1.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 7,
+                        Discount = 0,
+                        AmountDiscounted = 7,
+                        PersonId = 0,
+                        ProductName = requestProduct2.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 7,
+                        Discount = 0,
+                        AmountDiscounted = 7,
+                        PersonId = 0,
+                        ProductName = requestProduct2.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 7,
+                        Discount = 0,
+                        AmountDiscounted = 7,
+                        PersonId = 0,
+                        ProductName = requestProduct2.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 2.5m,
+                        Discount = 0,
+                        AmountDiscounted = 2.5m,
+                        PersonId = 0,
+                        ProductName = requestProduct3.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 2.5m,
+                        Discount = 0,
+                        AmountDiscounted = 2.5m,
+                        PersonId = 0,
+                        ProductName = requestProduct3.Name
+                    },
+                    new BillItemExternal
+                    {
+                        Amount = 2.5m,
+                        Discount = 0,
+                        AmountDiscounted = 2.5m,
+                        PersonId = 0,
+                        ProductName = requestProduct3.Name
+                    }
+                }
+            };
+
+            actual.Should().BeEquivalentTo(expected);
         }
     }
 }
