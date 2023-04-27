@@ -27,8 +27,6 @@ namespace RestaurantErp.Core.Providers.Discount
 
         public bool Remove(Guid id) => _discountById.TryRemove(id, out var _);
 
-        // TODO:
-        // change to return deepcopy
         public IDictionary<Guid, DiscountByTimeSettings> GetAll() => _discountById.DeepCopy();
 
         public BillDiscountInfo Calculate(Order order)
@@ -50,7 +48,6 @@ namespace RestaurantErp.Core.Providers.Discount
 
             var billDiscountInfo = new BillDiscountInfo
             {
-                //DiscountAmount = billDiscountItemInfo.Sum(i => i.DiscountAmount),
                 Items = billDiscountItemInfo
             };
 
