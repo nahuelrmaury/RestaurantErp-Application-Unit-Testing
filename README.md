@@ -1,4 +1,4 @@
-# RestaurantErp Application Unit Testing (Optional)
+# RestaurantErp Application Unit Testing
 
 This repository contains unit tests for the RestaurantErp.
 
